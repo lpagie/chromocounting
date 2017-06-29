@@ -1,0 +1,16 @@
+Package: chromocounting
+Title: Compute OE Scores for Chromocount Experiments
+Version: 0.1
+Authors@R: person("Ludo", "Pagie", email = "l.pagie@nki.nl", role = c("aut", "cre"))
+Description: Compute OE scores from bam files for chromocounting experiments.
+Depends: R (>= 3.2.1)
+Imports:
+    Biostrings,
+    BSgenome.Mmusculus.UCSC.mm10,
+    GenomeInfoDb,
+    GenomicAlignments,
+    GenomicRanges,
+    IRanges,
+    S4Vectors
+License: GPL-3
+LazyData: true
