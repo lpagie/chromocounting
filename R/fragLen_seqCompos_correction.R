@@ -43,11 +43,13 @@
 
 
 # Roxygen:
-#' Preprocess readcounts in GATC.readcounts
+#' @title Preprocess readcounts in GATC.readcounts
 #' 
+#' @description
 #' \code{PreprocReadcounts} preprocesses readcounts, ie flatten counts to 0/1, etc
 #' 
-#' Details: extended description of function
+#' @details
+#' extended description of function
 #' 
 #' @param GATC.readcounts GRanges object with GATC regions and readcounts (forw/rev/both) per sample.
 #' 
@@ -91,12 +93,18 @@ PreprocReadcounts <- function(GATC.readcounts) {
   return(GATC.readcounts)
 }
 
+#' @importFrom stats aggregate
+
+#' @importFrom methods as
+
 # Roxygen:
-#' Compute OE scores from read counts
+#' @title Compute OE scores from read counts
 #' 
+#' @description
 #' \code{SummarizeReadcounts} computes OE scores from read counts
 #' 
-#' Details: extended description of function
+#' @details
+#' extended description of function
 #' 
 #' @param fExp Numeric vector, length 2x number of GATC fragments, specifies
 #'   for each possible forward and reverse read whether it is expected (ie,
@@ -205,7 +213,7 @@ SummarizeReadcounts <- function(fExp, GATC.readcounts, binsize) {
 
   qhit.rle <- S4Vectors::Rle(S4Vectors::queryHits(ovl))
   binobs.agg <- sapply(seq.int(ncol(S4Vectors::mcols(GATC.readcounts))), 
-                       function(idx) S4Vectors::aggregate.Rle(S4Vectors::mcols(GATC.readcounts)[,idx], by=qhit.rle, FUN=sum))
+                       function(idx) S4Vectors::aggregate(S4Vectors::mcols(GATC.readcounts)[,idx], by=qhit.rle, FUN=sum))
   # sum forw columns and reverse columns
   binobs.agg <- binobs.agg[,c(TRUE,FALSE)] + binobs.agg[,c(FALSE,TRUE)]
 

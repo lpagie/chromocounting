@@ -1,9 +1,11 @@
 # Roxygen:
-#' Import bam files and generate read counts per GATC fragment
+#' @title Import bam files and generate read counts per GATC fragment
 #' 
+#' @description
 #' \code{BamToFragCounts} generates read counts per GATC fragment for a set of bam files.
 #' 
-#' Details: extended description of function
+#' @details
+#' extended description of function
 #' 
 #' @param meta.data Data frame.
 #' @param bam.dir Character, directory which contains the bamfiles.
@@ -98,13 +100,14 @@ Bam2FragCounts <-
       S4Vectors::mcols(GATC.fragments)[,paste(nm, 'forw',sep='_')] +
       S4Vectors::mcols(GATC.fragments)[,paste(nm, 'rev',sep='_')]
   }
+  cat("\r\n")
 
   # add sample meta data to 'GATC.fragments'
   # there are 3 columns per sample:
-  mdata <- mdata[rep(ncol(mdata), each=3,drop=FALSE),]
+  meta.data <- meta.data[rep(ncol(meta.data), each=3,drop=FALSE),]
   # add column with forw/rev/both direction
-  mdata$direction = c('forw','rev','both')
-  S4Vectors::mcols(S4Vectors::mcols(GATC.fragments)) <- mdata
+  meta.data$direction = c('forw','rev','both')
+  S4Vectors::mcols(S4Vectors::mcols(GATC.fragments)) <- meta.data
 
   # return
   return (GATC.fragments)

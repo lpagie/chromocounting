@@ -11,6 +11,8 @@ Imports:
     GenomicAlignments,
     GenomicRanges,
     IRanges,
+    methods,
     S4Vectors
 License: GPL-3
 LazyData: true
+RoxygenNote: 6.0.1

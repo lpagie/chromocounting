@@ -1,26 +1,17 @@
+#' @importFrom grDevices bitmap dev.off
 
-# fun the R part manually:
-#library(GenomicRanges)
-#library(GenomicAlignments)
-#library(plyr)
-#library(BSgenome)
-#library(BSgenome.Mmusculus.UCSC.mm10)
-#library(GenomicRanges)
-#library(GenomicAlignments)
-#source('/home/NFS/users/l.pagie/projects/LP141030_chromoCounting/analyses/LP170616_chromocounting_Rpkg/code/bam2fragCounts.R')
-#source('/home/NFS/users/l.pagie/projects/LP141030_chromoCounting/analyses/LP170616_chromocounting_Rpkg/code/fragLen_seqCompos_correction.R')
+#' @importFrom graphics axis barplot box par plot
 
-#(load('~/projects/LP141030_chromoCounting/analyses/LP170523_generateMappableReads_mm10/GATC_mm10.mappable.reads.39bp_LP170523.RData'))
-#(load('~/projects/LP141030_chromoCounting/analyses/LP170523_generateMappableReads_mm10/fExp_mm10_mpbl_LP170529.RData'))
-#(load("/home/NFS/users/l.pagie/data/genomes/mm10/GATCfragments/GATC_fragments_mm10_LP170523.RData"))
-# CHR <- paste0('chr', c(1:19, 'X','Y'))
+#' @importFrom stats lm predict
 
 # Roxygen:
-#' Compute OE scores from (a set of) bamfiles.
+#' @title Compute OE scores from (a set of) bamfiles.
 #' 
+#' @description
 #' \code{bamToOE} computes the observed-over-expected (OE) scores for a set of samples. The input is a bamfile for each sample.
 #' 
-#' Details: extended description of function
+#' @details
+#' extended description of function
 #' 
 #' @param exp.name Character, used to create output file names.
 #' @param bam.dir Character, directory which contains the bamfiles.
@@ -76,6 +67,9 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
       }
     }
   }
+  # check existence of output directory, or create if not existing yet
+  if (!dir.exists(outdir)) dir.create(outdir)
+
   ord <- order(sample.name)
   md <- S4Vectors::DataFrame(bam.fname=bam.fname[ord], sample.name=sample.name[ord], cell.count=cell.count[ord])
 
@@ -83,7 +77,8 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if (VERBOSE)
     print("starting bam2fragcounts")
   GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir=".", GATC.mpbl.reads, maxgap=0, shift=0, VERBOSE=VERBOSE)
-  ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RDATA", exp.name, sig))
+  ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RData", exp.name, sig))
+  if(VERBOSE) print(sprintf("Saving GATC.fragments.readcounts to %s", ofname))
   save(file=ofname, x=GATC.fragments.readcounts)
   if (VERBOSE) print("done bam2fragcounts")
 
@@ -122,10 +117,10 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if (VERBOSE) print(paste("compute OE"))
   OE <- SummarizeReadcounts(fExp, GATC.fragments.readcounts, bin.size)
   # discard sequences not in CHR
-  OE <- OE[GenomeInfoDb::seqnames(OE) %in% CHR]
+  OE <- OE[as.character(GenomeInfoDb::seqnames(OE)) %in% CHR]
   GenomeInfoDb::seqlevels(OE) <- GenomeInfoDb::seqlevelsInUse(OE)
   # save OE scores
-  ofname <- sprintf("%s_OE_raw_%s.RData", exp.name, sig)
+  ofname <- file.path(outdir, sprintf("%s_OE_raw_%s.RData", exp.name, sig))
   save(file=ofname, OE)
 
   ##########################
@@ -176,10 +171,10 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   OE.mat.norm <- OE.mat/OE.norm.factor
 
   # save normalized OE data
-  ofname <- sprintf("%s_OE_norm_%s.RData", exp.name, sig)
+  ofname <- file.path(outdir, sprintf("%s_OE_norm_%s.RData", exp.name, sig))
   save(file=ofname, OE.mat.norm)
   # generate profiles of normalized OE scores, for all samples
-  ofname <- sprintf("%s_OE_norm_profiles_%s.png", exp.name, sig)
+  ofname <- file.path(outdir, sprintf("%s_OE_norm_profiles_%s.png", exp.name, sig))
   bitmap(file=ofname, res=144, taa=4, width=28, height=21)
   opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat.norm))),2), mar=c(0.5,1,0.5,1))
   for (i in seq.int(ncol(OE.mat.norm))) {
