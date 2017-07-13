@@ -7,7 +7,7 @@
 bamToOE(exp.name, bam.dir = getwd(), bam.fname, sample.name, cell.count,
   sig = sprintf("LP\%s", format(Sys.time(), "\%y\%m\%d")), CHR,
   bin.size = "chromlength", fExp, GATC.mpbl.reads, OE.norm.factor = NULL,
-  outdir, VERBOSE = FALSE)
+  outdir, VERBOSE = FALSE, do.norm = TRUE)
 }
 \arguments{
 \item{exp.name}{Character, used to create output file names.}
@@ -24,8 +24,8 @@ bamToOE(exp.name, bam.dir = getwd(), bam.fname, sample.name, cell.count,
 
 \item{CHR}{Character vector, chromosome names to be used in the analysis.}
 
-\item{bin.size}{Character or integer, "chromlength" (each bin is entire chr
-length) or integer specifying the width of the bins used for computing the
+\item{bin.size}{integer, 0 (each bin is entire chr
+length) or >0 specifying the width in bp of the bins used for computing the
 OE scores.}
 
 \item{fExp}{Numeric vector, length of twice the number of GATC fragments in
@@ -39,12 +39,15 @@ expected readcount per fragment.}
 \item{outdir}{Character, specifies directory for output files.}
 
 \item{VERBOSE}{Logical, print diagnostic msgs [default = FALSE].}
+
+\item{do.norm}{Logical, perform normalization [default = FALSE].}
 }
 \value{
-List with 2 elements;
+List with 3 elements;
 \describe{
   \item{OE.norm.factor}{Numeric vector; normalization factor per window/chromosome to normalize raw OE scores}
-  \item{OE.norm}{GRanges object; granges specify genomic GATC fragments, mcols specify OE scores for each sample (ie bamfile)}
+  \item{OE.norm}{GRanges object; granges specify genomic GATC fragments, mcols specify normalized OE scores for each sample (ie each bamfile)}
+  \item{OE.raw}{GRanges object; granges specify genomic GATC fragments, mcols specify raw OE scores for each sample (ie each bamfile)}
 }
 }
 \description{
