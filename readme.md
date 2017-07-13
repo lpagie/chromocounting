@@ -9,5 +9,5 @@ library(devtools)
 document('chromocounting')
 check('chromocounting')
 build('chromocounting')
-install.packages('chromocounting_0.1.tar.gz', repos=NULL)
+install.packages('chromocounting_XYZ_tar.gz', repos=NULL) # where XYZ is the version number
 ```
