@@ -1,6 +1,6 @@
 Package: chromocounting
 Title: Compute OE Scores for Chromocount Experiments
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: person("Ludo", "Pagie", email = "l.pagie@nki.nl", role = c("aut", "cre"))
 Description: Compute OE scores from bam files for chromocounting experiments.
 Depends: R (>= 3.2.1)
