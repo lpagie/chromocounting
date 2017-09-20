@@ -57,6 +57,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if ( ( length(bam.fname) != length(sample.name) ) || ( length(bam.fname) != length(cell.count) ) )
     stop("length of vectors 'bam files', 'experiment names', and 'cell counts' is not equal, aborting\n\n")
 
+  bam.dir <- normalizePath(bam.dir)
   if (all (file.exists (bam.fname))) {
     bam.fname <- bam.fname 
   } else {
@@ -84,7 +85,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   # run bam2Frag
   if (VERBOSE)
     print("starting bam2fragcounts")
-  GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir=".", GenomicRanges::granges(GATC.mpbl.reads), maxgap=0, shift=0, VERBOSE=VERBOSE)
+  GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir="", GenomicRanges::granges(GATC.mpbl.reads), maxgap=0, shift=0, VERBOSE=VERBOSE)
   ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RData", exp.name, sig))
   if(VERBOSE) print(sprintf("Saving GATC.fragments.readcounts to %s", ofname))
   save(file=ofname, x=GATC.fragments.readcounts)
