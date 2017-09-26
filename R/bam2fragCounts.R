@@ -79,7 +79,7 @@ Bam2FragCounts <-
   # those in the imported bamfiles you can make corrections here. The only
   # option is to add a substring in fromt of the names. I.e. assuming the names
   # in the bamfiles lack 'chr' you can add that here.
-  if (addToName != "") {
+  if (addToName != "")
     mapreads <- lapply(mapreads, function(elm) GenomeInfoDb::renameSeqlevels(elm, paste0(addToName,GenomeInfoDb::seqlevels(elm))))
   names(mapreads) <- sample.names
 
