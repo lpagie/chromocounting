@@ -15,6 +15,8 @@
 #' @param shift Integer, exact number of bases by which reads are shifted
 #' before comparing to GATC position.
 #' @param VERBOSE Logical, print diagnostic msgs [default = FALSE].
+#' @param addToName Character, string which is added to the chromosome names
+#' read from the bamfile
 #' 
 #' @return GRanges object; granges specify genomic GATC fragments, mcols
 #' specify readcounts (forw/rev/both) per sample
@@ -25,7 +27,7 @@
 #' 
 Bam2FragCounts <- 
   function(meta.data, bam.dir, GATC.fragments, maxgap=0,
-			   shift=0, VERBOSE=FALSE) {
+			   shift=0, VERBOSE=FALSE, addToName="") {
   # Ludo Pagie, 140521, Bam2FragCounts,
   #
   # a function to read a set of bam files containing reads from DamID-seq
@@ -73,6 +75,12 @@ Bam2FragCounts <-
   # These objects can readily be used in findOverlaps function
   # mapreads <- lapply(file.path(bam.dir,bam.files), readGAlignmentsFromBam)
   mapreads <- lapply(file.path(bam.dir,bam.files), GenomicAlignments::readGAlignments)
+  # if there is a mismatch between chromosome names used in the package and
+  # those in the imported bamfiles you can make corrections here. The only
+  # option is to add a substring in fromt of the names. I.e. assuming the names
+  # in the bamfiles lack 'chr' you can add that here.
+  if (addToName != "") {
+    mapreads <- lapply(mapreads, function(elm) GenomeInfoDb::renameSeqlevels(elm, paste0(addToName,GenomeInfoDb::seqlevels(elm))))
   names(mapreads) <- sample.names
 
   ## if reads need to be shited relative to the start of the GATC site (shift !=

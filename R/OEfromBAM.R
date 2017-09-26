@@ -32,6 +32,9 @@
 #' @param VERBOSE Logical, print diagnostic msgs [default = FALSE].
 #' @param do.norm Logical, perform normalization [default = FALSE].
 #' @param plot Logical, generate plots [default = TRUE].
+#' @param addToName Character, a substrings which will be added in fromt of the
+#' chromsome names read from the bamfiles. This allows dealing with bamfiles
+#' which lack the 'chr' in the name.
 #' 
 #' @return List with 3 elements;
 #' \describe{
@@ -52,7 +55,7 @@
 bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.count, 
 		    sig=sprintf("LP%s", format(Sys.time(), "%y%m%d")), CHR, 
 		    bin.size=0, fExp, GATC.mpbl.reads, OE.norm.factor=NULL, outdir, 
-		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE) {
+		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE, addToName="") {
 
   # first, check input
   if ( ( length(bam.fname) != length(sample.name) ) || ( length(bam.fname) != length(cell.count) ) )
@@ -86,7 +89,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   # run bam2Frag
   if (VERBOSE)
     print("starting bam2fragcounts")
-  GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir="", GenomicRanges::granges(GATC.mpbl.reads), maxgap=0, shift=0, VERBOSE=VERBOSE)
+  GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir="", GenomicRanges::granges(GATC.mpbl.reads), maxgap=0, shift=0, VERBOSE=VERBOSE, addToName)
   ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RData", exp.name, sig))
   if(VERBOSE) print(sprintf("Saving GATC.fragments.readcounts to %s", ofname))
   save(file=ofname, x=GATC.fragments.readcounts)
