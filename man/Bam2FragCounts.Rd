@@ -5,7 +5,7 @@
 \title{Import bam files and generate read counts per GATC fragment}
 \usage{
 Bam2FragCounts(meta.data, bam.dir, GATC.fragments, maxgap = 0, shift = 0,
-  VERBOSE = FALSE)
+  VERBOSE = FALSE, addToName = "")
 }
 \arguments{
 \item{meta.data}{Data frame.}
@@ -21,6 +21,9 @@ and GATC position.}
 before comparing to GATC position.}
 
 \item{VERBOSE}{Logical, print diagnostic msgs [default = FALSE].}
+
+\item{addToName}{Character, string which is added to the chromosome names
+read from the bamfile}
 }
 \value{
 GRanges object; granges specify genomic GATC fragments, mcols

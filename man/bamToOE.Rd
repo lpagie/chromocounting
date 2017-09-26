@@ -6,8 +6,8 @@
 \usage{
 bamToOE(exp.name, bam.dir = getwd(), bam.fname, sample.name, cell.count,
   sig = sprintf("LP\%s", format(Sys.time(), "\%y\%m\%d")), CHR,
-  bin.size = "chromlength", fExp, GATC.mpbl.reads, OE.norm.factor = NULL,
-  outdir, VERBOSE = FALSE, do.norm = TRUE)
+  bin.size = 0, fExp, GATC.mpbl.reads, OE.norm.factor = NULL, outdir,
+  VERBOSE = FALSE, do.norm = TRUE, plot = TRUE, addToName = "")
 }
 \arguments{
 \item{exp.name}{Character, used to create output file names.}
@@ -41,6 +41,12 @@ expected readcount per fragment.}
 \item{VERBOSE}{Logical, print diagnostic msgs [default = FALSE].}
 
 \item{do.norm}{Logical, perform normalization [default = FALSE].}
+
+\item{plot}{Logical, generate plots [default = TRUE].}
+
+\item{addToName}{Character, a substrings which will be added in fromt of the
+chromsome names read from the bamfiles. This allows dealing with bamfiles
+which lack the 'chr' in the name.}
 }
 \value{
 List with 3 elements;
