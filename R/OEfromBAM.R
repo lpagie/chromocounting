@@ -51,7 +51,7 @@
 bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.count, 
 		    sig=sprintf("LP%s", format(Sys.time(), "%y%m%d")), CHR, 
 		    bin.size=0, fExp, GATC.mpbl.reads, OE.norm.factor=NULL, outdir, 
-		    VERBOSE=FALSE, do.norm=TRUE) {
+		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE) {
 
   # first, check input
   if ( ( length(bam.fname) != length(sample.name) ) || ( length(bam.fname) != length(cell.count) ) )
@@ -109,12 +109,15 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   # scale read depth by the total of possible reads, and logscale
   depth <- log10(depth/sum(S4Vectors::mcols(GATC.mpbl.reads)$nreads))
 
-  # generate image with barplot of readcounts
-  ofname <- file.path(outdir, sprintf("%s_readcounts_%s.png", exp.name, sig))
-  # bitmap(file=ofname, res=144, taa=4)
-  png(file=ofname, res=144, width=4*480, height=3*480)
-  barplot(-depth, col=1:5, main='-log10(Readdepth) as proportion of mappable reads', ylab='proportion', xlab='sample index')
-  dev.off()
+  if(plot) {
+    # generate image with barplot of readcounts
+    ofname <- file.path(outdir, sprintf("%s_readcounts_%s.png", exp.name, sig))
+    # bitmap(file=ofname, res=144, taa=4)
+    png(file=ofname, res=144, width=4*480, height=3*480)
+    barplot(-depth, col=1:5, main='-log10(Readdepth) as proportion of mappable reads', ylab='proportion', xlab='sample index')
+    dev.off()
+  }
+
   ## optionally; discard samples with relative readdepth < 10^-4
   if (any (! (depth>-4) ) ) {
     ok.idx <- which(depth>-4)
@@ -144,31 +147,37 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   # the following expression should not be necessary
   rownames(OE.mat) <- paste(as.character(GenomeInfoDb::seqnames(OE)), as.integer(GenomicRanges::start(OE)), sep="_")
   colnames(OE.mat) <- as.character(names(GenomicRanges::mcols(OE)))
+
   # generate image with profiles of all OE scores
-  ofname <- file.path(outdir, sprintf("%s_OE_raw_profiles_%s.png", exp.name, sig))
-  # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-  png(file=ofname, res=144, width=4*480, height=3*480)
-  opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
-  for (i in seq.int(ncol(OE.mat))) {
-    plot(OE.mat[,i], main='', ylim=c(0,2), axes=FALSE, pch=19)
-    axis(2)
-    box()
+  if(plot) {
+    ofname <- file.path(outdir, sprintf("%s_OE_raw_profiles_%s.png", exp.name, sig))
+    # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
+    png(file=ofname, res=144, width=4*480, height=3*480)
+    opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
+    for (i in seq.int(ncol(OE.mat))) {
+      plot(OE.mat[,i], main='', ylim=c(0,2), axes=FALSE, pch=19)
+      axis(2)
+      box()
+    }
+    par(opar)
+    dev.off()
   }
-  par(opar)
-  dev.off()
+
   # generate image of sample ID and cell count, as reference
-  ofname <- file.path(outdir, sprintf("%s_OE_profiles_mdata_%s.png", exp.name, sig))
-  # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-  png(file=ofname, res=144, width=4*480, height=3*480)
-  opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
-  for (i in seq.int(ncol(OE.mat))) {
-    plot(NA, main='', xlim=c(-1,1), ylim=c(-1,1), axes=FALSE, pty='n')
-    text(0,0,labels=sprintf("%s\n%d", colnames(OE.mat)[i], md$cell.count[i]), cex=1)
-    # axis(2)
-    box()
+  if (plot) {
+    ofname <- file.path(outdir, sprintf("%s_OE_profiles_mdata_%s.png", exp.name, sig))
+    # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
+    png(file=ofname, res=144, width=4*480, height=3*480)
+    opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
+    for (i in seq.int(ncol(OE.mat))) {
+      plot(NA, main='', xlim=c(-1,1), ylim=c(-1,1), axes=FALSE, pty='n')
+      text(0,0,labels=sprintf("%s\n%d", colnames(OE.mat)[i], md$cell.count[i]), cex=1)
+      # axis(2)
+      box()
+    }
+    par(opar)
+    dev.off()
   }
-  par(opar)
-  dev.off()
 
   if (!do.norm) {
     OE.norm.factor <- NULL
@@ -211,18 +220,21 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
     # save normalized OE data
     ofname <- file.path(outdir, sprintf("%s_OE_norm_%s.RData", exp.name, sig))
     save(file=ofname, OE.mat.norm)
+
     # generate profiles of normalized OE scores, for all samples
-    ofname <- file.path(outdir, sprintf("%s_OE_norm_profiles_%s.png", exp.name, sig))
-    # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-    png(file=ofname, res=144, width=4*480, height=3*480)
-    opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat.norm))),2), mar=c(0.5,1,0.5,1))
-    for (i in seq.int(ncol(OE.mat.norm))) {
-      plot(OE.mat.norm[,i], main="", ylim=c(0,2), axes=FALSE, pch=19)
-      axis(2)
-      box()
+    if (plot) {
+      ofname <- file.path(outdir, sprintf("%s_OE_norm_profiles_%s.png", exp.name, sig))
+      # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
+      png(file=ofname, res=144, width=4*480, height=3*480)
+      opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat.norm))),2), mar=c(0.5,1,0.5,1))
+      for (i in seq.int(ncol(OE.mat.norm))) {
+	plot(OE.mat.norm[,i], main="", ylim=c(0,2), axes=FALSE, pch=19)
+	axis(2)
+	box()
+      }
+      par(opar)
+      dev.off()
     }
-    par(opar)
-    dev.off()
   
     # coerce OE.mat.norm to GRanges object
     OE.norm <- OE
