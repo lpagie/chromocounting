@@ -31,6 +31,7 @@
 #' @param outdir Character, specifies directory for output files.
 #' @param VERBOSE Logical, print diagnostic msgs [default = FALSE].
 #' @param do.norm Logical, perform normalization [default = FALSE].
+#' @param plot Logical, generate plots [default = TRUE].
 #' 
 #' @return List with 3 elements;
 #' \describe{
