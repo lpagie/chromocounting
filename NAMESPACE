@@ -3,6 +3,7 @@
 export(bamToOE)
 importFrom(grDevices,bitmap)
 importFrom(grDevices,dev.off)
+importFrom(grDevices,png)
 importFrom(graphics,axis)
 importFrom(graphics,barplot)
 importFrom(graphics,box)

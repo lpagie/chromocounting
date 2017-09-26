@@ -117,7 +117,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
     # generate image with barplot of readcounts
     ofname <- file.path(outdir, sprintf("%s_readcounts_%s.png", exp.name, sig))
     # bitmap(file=ofname, res=144, taa=4)
-    png(file=ofname, res=144, width=4*480, height=3*480)
+    png(filename=ofname, res=144, width=4*480, height=3*480)
     barplot(-depth, col=1:5, main='-log10(Readdepth) as proportion of mappable reads', ylab='proportion', xlab='sample index')
     dev.off()
   }
@@ -156,7 +156,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if(plot) {
     ofname <- file.path(outdir, sprintf("%s_OE_raw_profiles_%s.png", exp.name, sig))
     # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-    png(file=ofname, res=144, width=4*480, height=3*480)
+    png(filename=ofname, res=144, width=4*480, height=3*480)
     opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
     for (i in seq.int(ncol(OE.mat))) {
       plot(OE.mat[,i], main='', ylim=c(0,2), axes=FALSE, pch=19)
@@ -171,7 +171,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if (plot) {
     ofname <- file.path(outdir, sprintf("%s_OE_profiles_mdata_%s.png", exp.name, sig))
     # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-    png(file=ofname, res=144, width=4*480, height=3*480)
+    png(filename=ofname, res=144, width=4*480, height=3*480)
     opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat))),2), mar=c(0.5,1,0.5,1))
     for (i in seq.int(ncol(OE.mat))) {
       plot(NA, main='', xlim=c(-1,1), ylim=c(-1,1), axes=FALSE, pty='n')
@@ -229,7 +229,7 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
     if (plot) {
       ofname <- file.path(outdir, sprintf("%s_OE_norm_profiles_%s.png", exp.name, sig))
       # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
-      png(file=ofname, res=144, width=4*480, height=3*480)
+      png(filename=ofname, res=144, width=4*480, height=3*480)
       opar  <- par(mfrow=rep(ceiling(sqrt(ncol(OE.mat.norm))),2), mar=c(0.5,1,0.5,1))
       for (i in seq.int(ncol(OE.mat.norm))) {
 	plot(OE.mat.norm[,i], main="", ylim=c(0,2), axes=FALSE, pch=19)
