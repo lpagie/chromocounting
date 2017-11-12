@@ -35,6 +35,8 @@
 #' @param addToName Character, a substrings which will be added in fromt of the
 #' chromsome names read from the bamfiles. This allows dealing with bamfiles
 #' which lack the 'chr' in the name.
+#' @param min.depth integer, minimal read depth per sample (samples with less reads are discarded) [default = 10000].
+#' @param sample.depth integer, target read depth per sample (samples will be downsampled to target; must be >= \code{min.depth}; sampling is \emph{without} replacement; set \code{sample.depth} to 0 (default) to prevent sampling) [default = 0].
 #' 
 #' @return List with 3 elements;
 #' \describe{
@@ -55,7 +57,8 @@
 bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.count, 
 		    sig=sprintf("LP%s", format(Sys.time(), "%y%m%d")), CHR, 
 		    bin.size=0, fExp, GATC.mpbl.reads, OE.norm.factor=NULL, outdir, 
-		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE, addToName="") {
+		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE, addToName="",
+		    min.depth=1e3, sample.depth=0L) {
 
   # first, check input
   if ( ( length(bam.fname) != length(sample.name) ) || ( length(bam.fname) != length(cell.count) ) )
@@ -90,28 +93,11 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   if (VERBOSE)
     print("starting bam2fragcounts")
   GATC.fragments.readcounts <- Bam2FragCounts(meta.data=md, bam.dir="", GenomicRanges::granges(GATC.mpbl.reads), maxgap=0, shift=0, VERBOSE=VERBOSE, addToName)
-  ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RData", exp.name, sig))
-  if(VERBOSE) print(sprintf("Saving GATC.fragments.readcounts to %s", ofname))
-  save(file=ofname, x=GATC.fragments.readcounts)
-  if (VERBOSE) print("done bam2fragcounts")
-
-  ################## ###
-  # compute OE scores #
-  #####################
-  # set bin size of calculating OE scores
-  if (bin.size == 0) {
-    bin.size <- GenomeInfoDb::seqlengths(GATC.fragments.readcounts)
-  } else {
-    if ( any( bin.size>GenomeInfoDb::seqlengths(GATC.fragments.readcounts)[CHR] ) )
-      stop("bin.size larger than a chromosomelength")
-  }
-
   # calculate total read count per sample (discard duplicate reads)
   depth <- sapply(rep(seq(1,ncol(S4Vectors::mcols(GATC.fragments.readcounts)),by=3),each=2)+0:1, # sum detected fragments in every 1st and 2nd column, ie discard every 3rd column. 3rd column contains the sum of 1st and 2nd but impossible to discard duplicates per forw/rev read.
 		  function(i) sum(S4Vectors::mcols(GATC.fragments.readcounts)[,i]>0))
   depth <- tapply(depth, rep(1:(ncol(S4Vectors::mcols(GATC.fragments.readcounts))/3), each=2), sum) # sum counts of forw and rev reads per GATC
-  # scale read depth by the total of possible reads, and logscale
-  depth <- log10(depth/sum(S4Vectors::mcols(GATC.mpbl.reads)$nreads))
+  names(depth) <- S4Vectors::mcols(S4Vectors::mcols(GATC.fragments.readcounts))$sample.name[c(T,F,F)]
 
   if(plot) {
     # generate image with barplot of readcounts
@@ -123,10 +109,88 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
   }
 
   ## optionally; discard samples with relative readdepth < 10^-4
-  if (any (! (depth>-4) ) ) {
-    ok.idx <- which(depth>-4)
+  if (any (depth<min.depth)) {
+    ok.idx <- which(! depth<min.depth)
+    if (VERBOSE)
+      print(sprintf("Some samples have too low read depth: \n%s", paste(depth[-ok.idx, drop=FALSE], collapse="\n", sep="")))
     ok.idx <- rep(ok.idx-1, each=3)*3+1:3
     S4Vectors::mcols(GATC.fragments.readcounts) <- S4Vectors::mcols(GATC.fragments.readcounts)[,ok.idx]
+  }
+
+  # downsample reads if reqeusted
+  if (sample.depth) {
+    if (VERBOSE)
+      print(sprintf("downsampling reads to %.0e reads", sample.depth))
+    # checks
+    if (sample.depth < min.depth)
+      stop("sample.depth < min.depth\nAborting")
+    sample.depth <- as.integer(sample.depth)
+    if (sample.depth<0)
+      stop(sprintf("sample.depth should be an integer >= 0 (currently: %s)\nAborting",as.character(sample.depth)))
+    if(any(depth<sample.depth))
+      stop(sprintf("some samples have: sum(reads ) < sample.depth\ncurrent readdepth:\n%s\nAborting", paste(depth, sep="", collapse="\n")))
+
+    # sampling; GATC.fragments.readcounts is a GRanges object, with readcounts
+    # per GATC fragment in forw/rev/both columns per sample. Sampling needs to
+    # be done at level of forw/rev column. I will make vectors with (repeated)
+    # indices, corresponding to the GATC fragments with positive readcounts.
+    # From this vector I will sample. The columns will then be re-populated via
+    # tabulating the sampled index vector. Forw and rev reads will be
+    # discriminated by taking the negative for the rev reads.
+    n.samples <- length(S4Vectors::mcols(GATC.fragments.readcounts))/3
+    # extract count matrix
+    # readcounts.mat <- as.matrix(GenomicRanges::as.data.frame(S4Vectors::mcols(GATC.fragments.readcounts)))
+    # iterate over samples
+    for (s in seq.int(n.samples)) { 
+      # column indices for forw/rev/both columns 
+      forw.ind <- (s-1)*3+1
+      rev.ind <- (s-1)*3+2
+      both.ind <- s*3
+      # collect row-numbers of readcount matrix and repeat them according to readcount
+      # mark readcounts of rev column by taking negative
+      inds <- c(rep(seq.int(length(GATC.mpbl.reads)), S4Vectors::mcols(GATC.fragments.readcounts)[,forw.ind]), 
+		rep(-(seq.int(length(GATC.mpbl.reads))), S4Vectors::mcols(GATC.fragments.readcounts)[,rev.ind]))
+      # inds <- c(rep(seq.int(length(forw.ind)), readcounts.mat[,forw.ind]), rep(-(seq.int(length(rev.ind))), readcounts.mat[,rev.ind]))
+      # sample from row-numbers
+      inds.smpl <- sample(inds, size=sample.depth, replace=FALSE)
+      # tabulate sampled row-numbers
+      cnts <- table(inds.smpl)
+      # split forw and rev readcounts
+      cnts.forw <- cnts[!grepl("^-",names(cnts))]
+      cnts.rev <- cnts[grepl("^-",names(cnts))]
+      # store sampled readcounts in matrix
+      # first, initialize count matrix to 0
+      S4Vectors::mcols(GATC.fragments.readcounts)[,c(forw.ind,rev.ind, both.ind)] <- 0
+      S4Vectors::mcols(GATC.fragments.readcounts)[as.integer(names(cnts.forw)),forw.ind] <- cnts.forw
+      S4Vectors::mcols(GATC.fragments.readcounts)[-as.integer(names(cnts.rev)),rev.ind] <- cnts.rev
+      S4Vectors::mcols(GATC.fragments.readcounts)[,both.ind] <- 
+	S4Vectors::mcols(GATC.fragments.readcounts)[,forw.ind] + 
+	S4Vectors::mcols(GATC.fragments.readcounts)[,rev.ind]
+#      readcounts.mat[T] <- 0
+#      readcounts.mat[as.integer(names(cnts.forw)),forw.ind] <- cnts.forw
+#      readcounts.mat[-as.integer(names(cnts.rev)),rev.ind] <- cnts.rev
+#      readcounts.mat[,both.ind] <- readcounts.mat[,forw.ind] + readcounts.mat[,rev.ind]
+    }
+    # replace readcounts by downsampled counts
+    # mcols(GATC) <- S4Vectors::DataFrame(readcounts.sampled.mat)
+  }
+  ofname <- file.path(outdir,sprintf("%s_GATC-readcounts_%s.RData", exp.name, sig))
+  if(VERBOSE) print(sprintf("Saving GATC.fragments.readcounts to %s", ofname))
+  save(file=ofname, x=GATC.fragments.readcounts)
+  if (VERBOSE) print("done bam2fragcounts")
+  # scale read depth by the total of possible reads, and logscale, historic reason for subsequent computations below
+  depth <- log10(depth/sum(S4Vectors::mcols(GATC.mpbl.reads)$nreads))
+
+
+  ################## ###
+  # compute OE scores #
+  #####################
+  # set bin size of calculating OE scores
+  if (bin.size == 0) {
+    bin.size <- GenomeInfoDb::seqlengths(GATC.fragments.readcounts)
+  } else {
+    if ( any( bin.size>GenomeInfoDb::seqlengths(GATC.fragments.readcounts)[CHR] ) )
+      stop("bin.size larger than a chromosomelength")
   }
 
   # coerce readcounts vectors to Rle (to speedup computations)

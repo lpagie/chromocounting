@@ -7,7 +7,8 @@
 bamToOE(exp.name, bam.dir = getwd(), bam.fname, sample.name, cell.count,
   sig = sprintf("LP\%s", format(Sys.time(), "\%y\%m\%d")), CHR,
   bin.size = 0, fExp, GATC.mpbl.reads, OE.norm.factor = NULL, outdir,
-  VERBOSE = FALSE, do.norm = TRUE, plot = TRUE, addToName = "")
+  VERBOSE = FALSE, do.norm = TRUE, plot = TRUE, addToName = "",
+  min.depth = 1000, sample.depth = 0L)
 }
 \arguments{
 \item{exp.name}{Character, used to create output file names.}
@@ -47,6 +48,10 @@ expected readcount per fragment.}
 \item{addToName}{Character, a substrings which will be added in fromt of the
 chromsome names read from the bamfiles. This allows dealing with bamfiles
 which lack the 'chr' in the name.}
+
+\item{min.depth}{integer, minimal read depth per sample (samples with less reads are discarded) [default = 10000].}
+
+\item{sample.depth}{integer, target read depth per sample (samples will be downsampled to target; must be >= \code{min.depth}; sampling is \emph{without} replacement; set \code{sample.depth} to 0 (default) to prevent sampling) [default = 0].}
 }
 \value{
 List with 3 elements;
