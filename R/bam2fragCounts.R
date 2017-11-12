@@ -112,7 +112,7 @@ Bam2FragCounts <-
 
   # add sample meta data to 'GATC.fragments'
   # there are 3 columns per sample:
-  meta.data <- meta.data[rep(ncol(meta.data), each=3,drop=FALSE),]
+  meta.data <- meta.data[rep(seq.int(nrow(meta.data)), each=3,drop=FALSE),]
   # add column with forw/rev/both direction
   meta.data$direction = c('forw','rev','both')
   S4Vectors::mcols(S4Vectors::mcols(GATC.fragments)) <- meta.data
