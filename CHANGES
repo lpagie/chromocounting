@@ -1,3 +1,24 @@
+Version 0.3.downsampling:
+ - updated man pages
+ - minor bugfixes
+ - Merge branch 'feature-adjustCHRnames'
+ - bam2fragCounts.R; bugfix wrong brace
+ - Merge branch 'feature-adjustCHRnames'
+ - OEfromBAM.R bam2fragCounts.R; feature add CHRnames
+ - Merge branch 'feature-plot-optional'
+ - OEfromBAM.R; made plots option
+ - upped version to 0.1.3
+ - Merge remote-tracking branch 'origin/master'
+ - Merge branch 'feature-plot-optional'
+ - OEfromBAM.R; made plots option
+ - upped version to 0.1.2
+ - Merge branch 'hotfix-check-bamdir-path'
+ - OEfromBAM.R; fixed bamfile path
+ - Merge branch 'hotfix-bitmap-to-png'
+ - OEfromBAM.R; changed bitmap to png
+ - Update readme.md
+ - ToDo; first commit
+
 Version 0.2.normalization-etc:
 
 
