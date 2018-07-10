@@ -1,3 +1,10 @@
+Version 0.4.fix-seqnameMismatch:
+ - DESCRIPTION: upped version
+ - feat: DESCRIPTION; added Rsamtools dependence
+ - bug: fixed seqnames mismatch bam and GATC data
+ - added feature for downsampling
+ - bam2fragCounts.R; bugfix
+
 Version 0.3.downsampling:
  - updated man pages
  - minor bugfixes
