@@ -73,8 +73,16 @@ Bam2FragCounts <-
                  paste(bam.files[notfound], sep='\n')))
   # read bamfiles. readGAlignmentsFromBam returns objects of class GAlignments.
   # These objects can readily be used in findOverlaps function
-  # mapreads <- lapply(file.path(bam.dir,bam.files), readGAlignmentsFromBam)
-  mapreads <- lapply(file.path(bam.dir,bam.files), GenomicAlignments::readGAlignments)
+  # Only read in data from sequences (chrommosomes) present in suppliued granges object
+  # Need to adapt sequence names if 'addToName' is not empty string (see also next section)
+  if (addToName != "")
+    seqnms <- sub(addToName,'',GenomeInfoDb::seqlevels(GATC.fragments))
+  else
+    seqnms <- GenomeInfoDb::seqlevels(GATC.fragments)
+  rngs <- GenomicRanges::GRanges(seqnms, IRanges::IRanges(1, GenomeInfoDb::seqlengths(GATC.fragments)))
+  param <- Rsamtools::ScanBamParam(what=Rsamtools::scanBamWhat(), which=rngs)
+  mapreads <- lapply(file.path(bam.dir, bam.files), GenomicAlignments::readGAlignments, param=param)
+
   # if there is a mismatch between chromosome names used in the package and
   # those in the imported bamfiles you can make corrections here. The only
   # option is to add a substring in fromt of the names. I.e. assuming the names
