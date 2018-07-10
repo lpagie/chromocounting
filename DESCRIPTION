@@ -12,6 +12,7 @@ Imports:
     GenomicRanges,
     IRanges,
     methods,
+    Rsamtools,
     S4Vectors
 License: GPL-3
 LazyData: true
