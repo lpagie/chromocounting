@@ -1,3 +1,9 @@
+Version 0.5.feat-plot-per-CHR:
+ - upped package version 0.1.4 -> 0.1.5
+ - feat: add option to plot chr level profiles
+ - Merge remote-tracking branch 'origin/master'
+ - bug: fixed seqnames mismatch bam and GATC data
+
 Version 0.4.fix-seqnameMismatch:
  - DESCRIPTION: upped version
  - feat: DESCRIPTION; added Rsamtools dependence
