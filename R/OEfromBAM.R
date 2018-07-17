@@ -57,7 +57,7 @@
 bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.count, 
 		    sig=sprintf("LP%s", format(Sys.time(), "%y%m%d")), CHR, 
 		    bin.size=0, fExp, GATC.mpbl.reads, OE.norm.factor=NULL, outdir, 
-		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE, addToName="",
+		    VERBOSE=FALSE, do.norm=TRUE, plot=TRUE, plotCHR=FALSE, addToName="",
 		    min.depth=1e3, sample.depth=0L) {
 
   # first, check input
@@ -246,6 +246,29 @@ bamToOE <- function(exp.name, bam.dir=getwd(), bam.fname, sample.name, cell.coun
     par(opar)
     dev.off()
   }
+  # 
+  if (plot && plotCHR) {
+    CHRS <- paste0('chr',c(1:19,'X'))
+    EXPS <- as.character(names(GenomicRanges::mcols(OE)))
+    names <- sub("(.*RMA.*_)0(.*)_.*","\\1\\2", EXPS)
+    names(names) <- EXPS
+
+    for (exp in EXPS) {
+      ofname <- file.path(outdir, sprintf("%s_OE_raw_profiles_%s_CHRS_%s.png", exp.name, exp, sig))
+      # bitmap(file=ofname, res=144, taa=4, width=28, height=21)
+      png(filename=ofname, res=144, width=4*480, height=3*480)
+      opar  <- par(mfrow=c(5,5), mar=c(0.5,1,0.5,1))
+      for (chr in CHRS) {
+	prof <- GenomicRanges::mcols(OE)[[exp]][as.character(GenomeInfoDb::seqnames(OE)) == chr]
+	plot(prof, main=sprintf("%s; chr%s", names[exp], chr), ylim=c(0,2), axes=FALSE, pch=19)
+	axis(2)
+	box()
+      }
+      par(opar)
+      dev.off()
+    }
+  }
+
 
   if (!do.norm) {
     OE.norm.factor <- NULL
